@@ -5,3 +5,7 @@ contracts/lib/
 *.log
 .env
 deployer.key.json
+agent/agent.key.json
+server/payee.key.json
+server.log
+agent.log

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentPay — x402 agent payments with budget guardrails</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #111; }
+  h1 { font-size: 1.6rem; } h2 { font-size: 1.1rem; margin-top: 2rem; }
+  .card { border: 1px solid #ddd; border-radius: 10px; padding: 1rem; margin: 0.75rem 0; }
+  .row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .stat { flex: 1; min-width: 120px; } .stat b { display: block; font-size: 1.3rem; }
+  input[type=text] { width: 70%; padding: 0.5rem; } button { padding: 0.5rem 1rem; cursor: pointer; }
+  pre { white-space: pre-wrap; background: #f6f6f6; padding: 0.75rem; border-radius: 8px; }
+  .muted { color: #666; font-size: 0.9rem; }
+  a { color: #0b5fff; }
+</style>
+</head>
+<body>
+<h1>AgentPay</h1>
+<p class="muted">An AI agent that pays per API call in USDC (x402) — with an on-chain BudgetVault enforcing a daily cap, per-call max, payee allowlist, and human approval for large payments. Base Sepolia testnet.</p>
+
+<h2>Ask the agent</h2>
+<div class="card">
+  <input id="q" type="text" placeholder="What is the ETH price and the weather in Jakarta?">
+  <button id="ask">Ask</button>
+  <pre id="answer">Try: "What is the ETH price and the weather in Jakarta?" or "Give me the crypto news."</pre>
+  <div id="receipts"></div>
+</div>
+
+<h2>Budget (on-chain)</h2>
+<div class="card"><div class="row" id="budget"><div class="stat">Loading…</div></div></div>
+
+<h2>Pending approvals</h2>
+<div class="card" id="pending">No pending payments. Payments above the approval threshold appear here for the owner to approve.</div>
+
+<script>
+const AGENT = "http://localhost:8788";
+const EXPLORER = "https://sepolia.basescan.org/tx/";
+
+async function loadBudget() {
+  try {
+    const b = await (await fetch(AGENT + "/budget")).json();
+    document.getElementById("budget").innerHTML = `
+      <div class="stat">Daily cap<b>$${b.dailyCap}</b></div>
+      <div class="stat">Spent today<b>$${b.spentToday}</b></div>
+      <div class="stat">Remaining<b>$${b.remainingDaily}</b></div>
+      <div class="stat">Per-call max<b>$${b.perCallMax}</b></div>
+      <div class="stat">Approval threshold<b>$${b.approvalThreshold}</b></div>
+      <div class="stat">Pending<b>${b.pendingCount}</b></div>`;
+    document.getElementById("pending").innerHTML = b.pendingCount === 0
+      ? "No pending payments. Payments above the approval threshold appear here for the owner to approve."
+      : `<p>${b.pendingCount} pending payment(s). Approve from the agent API: <code>POST /approve {"id": N}</code> (demo: owner key held by the agent process).</p>`;
+  } catch (e) {
+    document.getElementById("budget").innerHTML = `<div class="stat">Agent not running — start it first (<code>cd agent && npm start</code>).</div>`;
+  }
+}
+document.getElementById("ask").onclick = async () => {
+  const q = document.getElementById("q").value.trim();
+  if (!q) return;
+  document.getElementById("answer").textContent = "Agent is planning, checking the budget, and paying…";
+  const out = await (await fetch(AGENT + "/ask", {
+    method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ question: q }),
+  })).json();
+  document.getElementById("answer").textContent = out.answer || out.error || "No answer.";
+  document.getElementById("receipts").innerHTML = (out.receipts || []).map(r =>
+    `<div>Paid $${r.amountUSDC} for ${r.api} — <a href="${EXPLORER}${r.tx}" target="_blank">${r.tx.slice(0, 18)}…</a></div>`).join("")
+    + (out.needsApproval || []).map(a =>
+    `<div>⚠️ ${a.api} ($${a.priceUSDC}) needs owner approval — pending #${a.id}.</div>`).join("");
+  loadBudget();
+};
+loadBudget();
+</script>
+</body>
+</html>

@@ -69,7 +69,7 @@ User asks a question
 | Item | Hasil |
 |---|---|
 | BudgetVault (Base Sepolia) | TBD after deploy |
-| USDC (Base Sepolia) | `0x036CbD53842c5426634e79217e7B053fC0e5bD9fa0` (Circle testnet USDC) |
+| USDC (Base Sepolia) | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` (Circle testnet USDC, verified on-chain) |
 
 ## Run it
 

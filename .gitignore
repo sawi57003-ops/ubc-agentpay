@@ -4,3 +4,4 @@ contracts/cache/
 contracts/lib/
 *.log
 .env
+deployer.key.json

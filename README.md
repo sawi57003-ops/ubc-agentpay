@@ -68,7 +68,7 @@ User asks a question
 
 | Item | Hasil |
 |---|---|
-| BudgetVault (Base Sepolia) | TBD after deploy |
+| BudgetVault (Base Sepolia) | `0xa5e13d27039a695b54d692e6d990b62cadfb11b4` (deployed 19 Nov 2026, tx `0x851515e956d669ecdbe91bcb8a127f137725d8f9bb67aeeb23eadf7f65b162e8`) |
 | USDC (Base Sepolia) | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` (Circle testnet USDC, verified on-chain) |
 
 ## Run it

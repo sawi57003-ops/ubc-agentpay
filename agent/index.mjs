@@ -162,12 +162,12 @@ async function ask(question) {
   }
 
   const parts = results.map((r) => {
+    if (r.status) return `${r.api}: ${r.status} (pending #${r.pendingId})`;
     if (r.api === "price" && r.priceUSD) return `ETH price: $${r.priceUSD}`;
     if (r.api === "price" && r.symbol) return `${r.symbol}: $${r.priceUSD}`;
     if (r.api === "weather") return `Weather in ${r.city}: ${r.tempC}°C, ${r.condition}`;
     if (r.api === "news") return `Headlines (${r.topic}): ${r.headlines.join(" | ")}`;
     if (r.api === "research") return `Research brief (${r.topic}): ${r.brief}`;
-    if (r.status) return `${r.api}: ${r.status} (pending #${r.pendingId})`;
     return `${r.api}: ${r.error || "no data"}`;
   });
   return {
